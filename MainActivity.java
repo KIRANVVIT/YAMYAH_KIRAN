@@ -1,66 +1,60 @@
-package com.example.vihari.mike;
+package com.example.vihari.sms;
 
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.speech.RecognizerIntent;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.view.View;
-import android.widget.TextView;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Locale;
+import com.mkyong.android.R;
 
-import static android.R.attr.prompt;
+class SendSMSActivity extends Activity {
 
-public class MainActivity extends AppCompatActivity {
+    ImageButton buttonSend;
+    EditText textPhoneNo;
+    EditText textSMS;
 
-    private TextView resultTEXT;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        resultTEXT = (TextView)findViewById(R.id.TVresult);
-    }
 
-    public void onButtonClick(View v)
-    {
-        if(v.getId() == R.id.imageButton)
-        {
+        buttonSend = (ImageButton) findViewById(R.id.button);
+        textPhoneNo = (EditText) findViewById(R.id.editText);
+        textSMS = (EditText) findViewById(R.id.editText2);
 
-            promptSpeechInput();
-        }
-    }
 
-    public void promptSpeechInput()
-    {
-        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE , Locale.getDefault());
-        i.putExtra(RecognizerIntent.EXTRA_PROMPT , "Say something to mike");
 
-        try {
-            startActivityForResult(i, 100);
-        }
-        catch (ActivityNotFoundException a)
-        {
-            Toast.makeText(MainActivity.this, "Sorry! device is not supporting" , Toast.LENGTH_LONG).show();
-        }
-    }
+        buttonSend.setOnClickListener(new OnClickListener() {
 
-    public void onActivityResult(int request_code, int result_code, Intent i)
-    {
-        super.onActivityResult(request_code, result_code, i);
+            @Override
+            public void onClick(View v) {
 
-            switch (request_code)
-            {
-                case 100: if (result_code == RESULT_OK && i != null)
-                {
-                    ArrayList<String> result = i.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    resultTEXT.setText(result.get(0));
+                String phoneNo = textPhoneNo.getText().toString();
+                String sms = textSMS.getText().toString();
+                if (textPhoneNo.getText().toString().length() == 0)
+                    textPhoneNo.setError("Enter Phone Number");
+                else if (textSMS.getText().toString().length() == 0) {
+                    textSMS.setError("Enter Message");
+                } else {
+                    try {
+                        SmsManager smsManager = SmsManager.getDefault();
+                        smsManager.sendTextMessage(phoneNo, null, sms, null, null);
+                        Toast.makeText(getApplicationContext(), "SMS Sent!",
+                                Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(),
+                                "SMS faild, please try again later!",
+                                Toast.LENGTH_LONG).show();
+                        e.printStackTrace();
+                    }
+
                 }
-                    break;
             }
+        });
     }
 }
